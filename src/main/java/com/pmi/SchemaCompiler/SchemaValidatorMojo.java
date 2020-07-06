@@ -160,7 +160,9 @@ public class SchemaValidatorMojo extends AbstractMojo {
         validateFieldMeta(filePath, target, fieldValue, field);
 
         // Recursively validate each field.
-        validateTargetType(filePath, target, fieldValue, fieldValue.getClass());
+        if (fieldValue != null) {
+          validateTargetType(filePath, target, fieldValue, fieldValue.getClass());
+        }
       }
     }
   }
@@ -185,7 +187,7 @@ public class SchemaValidatorMojo extends AbstractMojo {
   }
 
   private boolean validateNullable(Object fieldValue, Meta fieldMeta) {
-    if (false == fieldMeta.getNullable()) {
+    if (Boolean.FALSE == fieldMeta.getNullable()) {
       return fieldValue != null;
     } else {
       return true;
