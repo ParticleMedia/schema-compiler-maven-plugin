@@ -6,3 +6,5 @@ test:
 
 deploy:
 	@mvn clean deploy
+
+include .makefiles/*.mk
