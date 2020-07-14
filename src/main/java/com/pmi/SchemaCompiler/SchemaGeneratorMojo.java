@@ -22,7 +22,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-/** Goal which generate source files of data modle based on the definiation in schema yaml files. */
+/** Goal which generate source files of data models based on the definition in schema yaml files. */
 @Mojo(name = "generate-schema", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class SchemaGeneratorMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project.build.sourceDirectory}", required = true)
