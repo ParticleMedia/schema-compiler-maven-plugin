@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +26,13 @@ import org.apache.maven.project.MavenProject;
 /** Goal which generates ad config files. */
 @Mojo(name = "generate-config", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class ConfigGeneratorMojo extends AbstractMojo {
+  private static String pattern_fb = "153277661752118_\\d{15}";
+  private static String pattern_admob1 = "/21839579524/am-(ios|android)-.+";
+  private static String pattern_admob2 = "ca-app-pub-4001304092171320/\\d{10}";
+  private static String pattern_dfp = "/21839579524/am-(ios|android)-.+";
+  private static String pattern_smaato = "\\d{9}";
+  private static String pattern_aps = "/21839579524/aps/amazon-(ios|android)-.+";
+
   @Parameter(defaultValue = "${project}")
   private MavenProject project;
 
@@ -38,6 +46,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
   private ObjectMapper objectMapper =
       new ObjectMapper().configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+
   private Map<String, Map<String, Object>> adUnits;
 
   public void execute() throws MojoExecutionException {
@@ -134,9 +143,11 @@ public class ConfigGeneratorMojo extends AbstractMojo {
             .collect(Collectors.toMap(path -> pathToKey(path), path -> readJson(path)));
 
     checkDuplicatedPlacementId(adUnits.values());
+    checkPlacementIdValue(adUnits.values());
     return adUnits;
   }
 
+  // Check if one placement id is being used in multiple ad units.
   private void checkDuplicatedPlacementId(Collection<Map<String, Object>> adUnits)
       throws Exception {
     Set<String> placementIds = new HashSet<String>();
@@ -152,6 +163,42 @@ public class ConfigGeneratorMojo extends AbstractMojo {
       }
 
       placementIds.add(placementId);
+    }
+  }
+
+  // Check if the placement id matches regular expression pattern of each ctype.
+  private void checkPlacementIdValue(Collection<Map<String, Object>> adUnits) throws Exception {
+    for (Map<String, Object> adUnit : adUnits) {
+      String placementId = (String) adUnit.get("placement_id");
+      String ctype = (String) adUnit.get("ctype");
+
+      boolean result = false;
+      switch (ctype) {
+        case "ad_aps_native":
+          result = placementId.matches(pattern_aps);
+          break;
+        case "ad_admob_native":
+          result = placementId.matches(pattern_admob1) || placementId.matches(pattern_admob2);
+          break;
+        case "ad_dfp_native":
+          result = placementId.matches(pattern_dfp);
+          break;
+        case "ad_fb_native":
+          result = placementId.matches(pattern_fb);
+          break;
+        case "ad_smaato_native":
+          result = placementId.matches(pattern_smaato);
+          break;
+        default:
+          throw new Exception(MessageFormat.format("Unknown ctype: {0}", ctype));
+      }
+
+      if (!result) {
+        throw new Exception(
+            MessageFormat.format(
+                "Placement Id {0} does not match pattern for ctype {1}. Please check if there is typo",
+                placementId, ctype));
+      }
     }
   }
 
