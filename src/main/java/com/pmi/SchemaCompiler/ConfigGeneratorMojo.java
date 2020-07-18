@@ -189,6 +189,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         case "ad_smaato_native":
           result = placementId.matches(pattern_smaato);
           break;
+        case "ad_prebid_native":
+          result = placementId.matches(pattern_admob1);
+          break;
         default:
           throw new Exception(MessageFormat.format("Unknown ctype: {0}", ctype));
       }
