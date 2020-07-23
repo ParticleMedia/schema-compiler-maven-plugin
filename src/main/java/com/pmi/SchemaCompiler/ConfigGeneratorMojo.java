@@ -56,14 +56,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
             if ("ad_fb_native".equals(o2.get("ctype")) && price2 == 0) {
               return 1;
             }
-
-            if (price1 > price2) {
-              return -1;
-            } else if (price1 < price2) {
-              return 1;
-            } else {
-              return 0;
-            }
+            return Double.compare(price2, price1);
           }
         }
       };
