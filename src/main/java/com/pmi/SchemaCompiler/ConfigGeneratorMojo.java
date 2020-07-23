@@ -9,7 +9,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,6 +34,39 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   private static String pattern_dfp = "/21839579524/am-(ios|android)-.+";
   private static String pattern_smaato = "\\d{9}";
   private static String pattern_aps = "/21839579524/aps/amazon-(ios|android)-.+";
+
+  private static Comparator<Map<String, Object>> comparator =
+      new Comparator<Map<String, Object>>() {
+
+        @Override
+        public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+          if (!o1.containsKey("price") && !o2.containsKey("price")) {
+            return 0;
+          } else if (!o1.containsKey("price")) {
+            return -1;
+          } else if (!o2.containsKey("price")) {
+            return 1;
+          } else {
+            double price1 = new Double(o1.get("price").toString());
+            double price2 = new Double(o2.get("price").toString());
+            if ("ad_fb_native".equals(o1.get("ctype")) && price1 == 0) {
+              return -1;
+            }
+
+            if ("ad_fb_native".equals(o2.get("ctype")) && price2 == 0) {
+              return 1;
+            }
+
+            if (price1 > price2) {
+              return -1;
+            } else if (price1 < price2) {
+              return 1;
+            } else {
+              return 0;
+            }
+          }
+        }
+      };
 
   @Parameter(defaultValue = "${project}")
   private MavenProject project;
@@ -121,7 +156,11 @@ public class ConfigGeneratorMojo extends AbstractMojo {
       Path path, Map<String, Map<String, Object>> adDefault) {
     Map<String, Object> ad = readAndExpand(path);
     String adSlot = getAdSlot(path);
-    return override(adDefault.get(adSlot), ad);
+    ad = override(adDefault.get(adSlot), ad);
+    ArrayList<Map<String, Object>> ads = (ArrayList<Map<String, Object>>) ad.get("ads");
+    ads.sort(comparator);
+    ad.put("ads", ads);
+    return ad;
   }
 
   // Returns a new map representing an JSON object by replacing the fields in the parent with the
