@@ -47,6 +47,13 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           } else if (!o2.containsKey("price")) {
             return 1;
           } else {
+            if ("ad_aps_native".equals(o1.get("ctype"))) {
+              return 1;
+            }
+            if ("ad_aps_native".equals(o2.get("ctype"))) {
+              return -1;
+            }
+
             double price1 = new Double(o1.get("price").toString());
             double price2 = new Double(o2.get("price").toString());
             if ("ad_fb_native".equals(o1.get("ctype")) && price1 == 0) {
@@ -105,11 +112,13 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   // and so on
   private void processSegment(Path segment, Map<String, Map<String, Object>> adDefault) {
     try {
-      Files.walk(segment).filter(path -> isJsonFile(path))
+      Files.walk(segment)
+          .filter(path -> isJsonFile(path))
           .collect(
               Collectors.toMap(
                   path -> pathToKey(path), path -> readExpandAndOverride(path, adDefault)))
-          .entrySet().stream()
+          .entrySet()
+          .stream()
           .forEach(entry -> writeJson(segment, entry.getKey(), entry.getValue()));
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -231,7 +240,8 @@ public class ConfigGeneratorMojo extends AbstractMojo {
       if (!result) {
         throw new Exception(
             MessageFormat.format(
-                "Placement Id {0} does not match pattern for ctype {1}. Please check if there is typo",
+                "Placement Id {0} does not match pattern for ctype {1}. Please check if there is"
+                    + " typo",
                 placementId, ctype));
       }
     }
