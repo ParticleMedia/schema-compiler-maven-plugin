@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
+import org.javatuples.Pair;
 
 /** Goal which generates ad config files. */
 @Mojo(name = "generate-config", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
@@ -35,38 +36,51 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   private static String pattern_smaato = "\\d{9}";
   private static String pattern_aps = "/21839579524/aps/amazon-(ios|android)-.+";
 
-  private static Comparator<Map<String, Object>> comparator =
-      new Comparator<Map<String, Object>>() {
+  private class AdUnitComparator implements Comparator<Map<String, Object>> {
+    private boolean isGreaterThanAndroidVersion810 = false;
 
-        @Override
-        public int compare(Map<String, Object> o1, Map<String, Object> o2) {
-          if (!o1.containsKey("price") && !o2.containsKey("price")) {
-            return 0;
-          } else if (!o1.containsKey("price")) {
+    AdUnitComparator(boolean isGreaterThanAndroidVersion810) {
+      this.isGreaterThanAndroidVersion810 = isGreaterThanAndroidVersion810;
+    }
+
+    public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+      if (!o1.containsKey("price") && !o2.containsKey("price")) {
+        return 0;
+      } else if (!o1.containsKey("price")) {
+        return -1;
+      } else if (!o2.containsKey("price")) {
+        return 1;
+      } else {
+        // Before android version 8.1.0, we put aps at the bottom,
+        // after android version 8.1.0, we put aps at the top.
+        if ("ad_aps_native".equals(o1.get("ctype"))) {
+          if (isGreaterThanAndroidVersion810) {
             return -1;
-          } else if (!o2.containsKey("price")) {
-            return 1;
           } else {
-            if ("ad_aps_native".equals(o1.get("ctype"))) {
-              return 1;
-            }
-            if ("ad_aps_native".equals(o2.get("ctype"))) {
-              return -1;
-            }
-
-            double price1 = new Double(o1.get("price").toString());
-            double price2 = new Double(o2.get("price").toString());
-            if ("ad_fb_native".equals(o1.get("ctype")) && price1 == 0) {
-              return -1;
-            }
-
-            if ("ad_fb_native".equals(o2.get("ctype")) && price2 == 0) {
-              return 1;
-            }
-            return Double.compare(price2, price1);
+            return 1;
           }
         }
-      };
+        if ("ad_aps_native".equals(o2.get("ctype"))) {
+          if (isGreaterThanAndroidVersion810) {
+            return 1;
+          } else {
+            return -1;
+          }
+        }
+
+        double price1 = new Double(o1.get("price").toString());
+        double price2 = new Double(o2.get("price").toString());
+        if ("ad_fb_native".equals(o1.get("ctype")) && price1 == 0) {
+          return -1;
+        }
+
+        if ("ad_fb_native".equals(o2.get("ctype")) && price2 == 0) {
+          return 1;
+        }
+        return Double.compare(price2, price1);
+      }
+    }
+  }
 
   @Parameter(defaultValue = "${project}")
   private MavenProject project;
@@ -159,8 +173,32 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     Map<String, Object> ad = readAndExpand(path);
     String adSlot = getAdSlot(path);
     ad = override(adDefault.get(adSlot), ad);
+
     ArrayList<Map<String, Object>> ads = (ArrayList<Map<String, Object>>) ad.get("ads");
+
+    // smaato ad units does not participate in the sorting, they should stay where they are after
+    // sorting. So, before sorting, we extract them out from the ad units, and put them back to
+    // sorted ad units by using their index.
+    List<Pair<Integer, Map<String, Object>>> smaato =
+        new ArrayList<Pair<Integer, Map<String, Object>>>();
+    for (int i = 0; i < ads.size(); i++) {
+      Map<String, Object> adUnit = ads.get(i);
+      if ("ad_smaato_native".equals(adUnit.get("ctype"))) {
+        smaato.add(new Pair<Integer, Map<String, Object>>(i, adUnit));
+      }
+    }
+
+    for (int i = smaato.size() - 1; i >= 0; i--) {
+      ads.remove((int) smaato.get(i).getValue0());
+    }
+
+    AdUnitComparator comparator = new AdUnitComparator(isGreaterThanAndroidVersion810(path));
     ads.sort(comparator);
+
+    for (Pair<Integer, Map<String, Object>> pair : smaato) {
+      ads.add(pair.getValue0(), pair.getValue1());
+    }
+
     ad.put("ads", ads);
     return ad;
   }
@@ -324,6 +362,19 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     } else {
       return obj;
     }
+  }
+
+  // Check if this file is android config and version is greater than or equal to 8.1.0
+  private boolean isGreaterThanAndroidVersion810(Path path) {
+    String fileName = path.getFileName().toString();
+    String[] sections = fileName.split("_");
+    if ("android".equals(sections[0])) {
+      String version = sections[2];
+      String[] digits = version.split("\\.");
+      return Integer.parseInt(digits[0]) >= 8 && Integer.parseInt(digits[1]) >= 1;
+    }
+
+    return false;
   }
 
   // For debugging purpose only.
