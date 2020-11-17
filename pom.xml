@@ -7,7 +7,7 @@
 
   <groupId>com.pmi</groupId>
   <artifactId>schema-compiler-maven-plugin</artifactId>
-  <version>2.5</version>
+  <version>2.6</version>
   <packaging>maven-plugin</packaging>
 
   <name>schema-compiler-maven-plugin Maven Plugin</name>
