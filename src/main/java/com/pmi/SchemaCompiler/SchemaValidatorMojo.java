@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NumericNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.pmi.SchemaCompiler.data.Field;
 import com.pmi.SchemaCompiler.data.Meta;
 import com.pmi.SchemaCompiler.data.Schema;
@@ -19,6 +20,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -125,8 +127,8 @@ public class SchemaValidatorMojo extends AbstractMojo {
               .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
               .enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
               .readValue(filePath.toUri().toURL(), targetC);
-      JsonNode expected = objectMapper.readTree(objectMapper.writeValueAsString(targetObject));
-      JsonNode acutal = objectMapper.readTree(filePath.toUri().toURL());
+      JsonNode acutal = objectMapper.readTree(objectMapper.writeValueAsString(targetObject));
+      JsonNode expected = trim(objectMapper.readTree(filePath.toUri().toURL()));
       if (!acutal.equals(comparator, expected)) {
         throw new Exception(
             MessageFormat.format(
@@ -136,6 +138,18 @@ public class SchemaValidatorMojo extends AbstractMojo {
 
       validateTargetType(filePath, null, targetObject, targetC);
     }
+  }
+
+  private JsonNode trim(JsonNode node) {
+    JsonNode ads = node.get("ads");
+    if (ads != null) {
+      for (Iterator<JsonNode> itr = ads.elements(); itr.hasNext(); ) {
+        ObjectNode ad = (ObjectNode) itr.next();
+        ad.remove("_comment");
+      }
+    }
+
+    return node;
   }
 
   private void validateTargetType(Path filePath, Object parent, Object target, Class targetC)
