@@ -1,5 +1,6 @@
 package com.pmi.SchemaCompiler.data;
 
+import com.google.common.base.CaseFormat;
 import com.pmi.SchemaCompiler.utils.TypeUtil;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +14,28 @@ public class Field {
   private Meta meta;
   private String doc;
 
+  // These fields do not appear in schema yaml file. They are only used as helper to generate source
+  // codes.
+  private String getterName;
+  private String setterName;
+  private boolean isList;
+  private String clonerName;
+
   public void setType(String type) {
     this.type = TypeUtil.parseGenericType(type);
+    this.getterName = TypeUtil.getterName(this.name, type);
+    this.setterName = "set" + CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, this.name);
+
+    if (this.type.startsWith("List")) {
+      this.isList = true;
+    } else {
+      this.isList = false;
+    }
+
+    if (TypeUtil.isImmutableType(this.type)) {
+      this.clonerName = this.getterName;
+    } else {
+      this.clonerName = this.name + ".clone";
+    }
   }
 }

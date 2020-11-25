@@ -3,14 +3,15 @@ package com.pmi.data;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This is a auto generated class. You can see more details from here:
@@ -35,6 +36,30 @@ public class {{name}} {
   {{#meta.serializeEnumAsInt}}
   @JsonSerialize(using = IntegerEnumSerializer.class)
   {{/meta.serializeEnumAsInt}}
+  {{#meta.serializeIgnore}}
+  @JsonIgnore
+  {{/meta.serializeIgnore}}
   private {{{type}}} {{name}};
+
   {{/fields}}
+  public {{name}} clone() {
+    {{name}} newObj = new {{name}}();
+
+    {{#fields}}
+    {{#isList}}
+    if (this.{{name}} != null) {
+      {{{type}}} newList =
+        this.{{name}}.stream().map(element -> element.clone()).collect(Collectors.toList());
+      newObj.{{setterName}}(newList);
+    } else {
+      newObj.{{setterName}}(null);
+    }
+    {{/isList}}
+    {{^isList}}
+    newObj.{{setterName}}(this.{{clonerName}}());
+    {{/isList}}
+    {{/fields}}
+
+    return newObj;
+  }
 }

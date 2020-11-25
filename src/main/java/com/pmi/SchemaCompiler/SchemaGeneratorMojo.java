@@ -3,6 +3,7 @@ package com.pmi.SchemaCompiler;
 import com.pmi.SchemaCompiler.data.Enum;
 import com.pmi.SchemaCompiler.data.Schema;
 import com.pmi.SchemaCompiler.data.Type;
+import com.pmi.SchemaCompiler.utils.TypeUtil;
 import com.pmi.SchemaCompiler.utils.YamlUtil;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
@@ -35,11 +36,12 @@ public class SchemaGeneratorMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     try {
       Schema schema = YamlUtil.readSchema(schemaDir);
-      List<Type> types = YamlUtil.readTypes(schemaDir, schema);
       List<Enum> enums = YamlUtil.readEnums(schemaDir, schema);
+      TypeUtil.addEnumTypes(enums);
+      List<Type> types = YamlUtil.readTypes(schemaDir, schema);
       Path packageDirPath = mkdirs();
-      genTypes(packageDirPath, types);
       genEnums(packageDirPath, enums);
+      genTypes(packageDirPath, types);
       genOthers(packageDirPath);
     } catch (Exception e) {
       getLog().error(e);
