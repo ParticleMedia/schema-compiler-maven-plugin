@@ -48,8 +48,15 @@ public class {{name}} {
     {{#fields}}
     {{#isList}}
     if (this.{{name}} != null) {
+      {{#useClone}}
       {{{type}}} newList =
         this.{{name}}.stream().map(element -> element.clone()).collect(Collectors.toList());
+      {{/useClone}}
+      {{^useClone}}
+      {{{type}}} newList =
+        this.{{name}}.stream().map(element -> element).collect(Collectors.toList());
+      {{/useClone}}
+      
       newObj.{{setterName}}(newList);
     } else {
       newObj.{{setterName}}(null);
