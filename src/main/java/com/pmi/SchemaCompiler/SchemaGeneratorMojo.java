@@ -7,7 +7,6 @@ import com.pmi.SchemaCompiler.utils.TypeUtil;
 import com.pmi.SchemaCompiler.utils.YamlUtil;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,8 +25,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 /** Goal which generate source files of data models based on the definition in schema yaml files. */
 @Mojo(name = "generate-schema", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
 public class SchemaGeneratorMojo extends AbstractMojo {
-  @Parameter(defaultValue = "${project.build.sourceDirectory}", required = true)
-  private File sourceDir;
+  @Parameter(property = "generatedSchemaDir", required = true)
+  private String generatedSchemaDir;
 
   // The directory which should contain main.yml inside it.
   @Parameter(property = "schemaDir", required = true)
@@ -93,7 +92,7 @@ public class SchemaGeneratorMojo extends AbstractMojo {
   }
 
   private Path mkdirs() throws IOException {
-    Path packageDirPath = Paths.get(sourceDir.getPath(), "com", "pmi", "data");
+    Path packageDirPath = Paths.get(generatedSchemaDir, "com", "pmi", "data");
 
     if (!Files.exists(packageDirPath)) {
       Files.createDirectories(packageDirPath);
