@@ -17,10 +17,12 @@ public class TypeUtil {
   static {
     immutableTypes.add("String");
     immutableTypes.add("Integer");
+    immutableTypes.add("Long");
     immutableTypes.add("Boolean");
     immutableTypes.add("Float");
     immutableTypes.add("Double");
     immutableTypes.add("int");
+    immutableTypes.add("long");
     immutableTypes.add("boolean");
     immutableTypes.add("float");
     immutableTypes.add("double");
