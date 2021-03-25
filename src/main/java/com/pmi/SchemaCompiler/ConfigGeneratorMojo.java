@@ -260,7 +260,10 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           result = placementId.matches(pattern_aps);
           break;
         case "ad_admob_native":
-          result = placementId.matches(pattern_admob1) || placementId.matches(pattern_admob2) || placementId.matches(pattern_admob3);
+          result =
+              placementId.matches(pattern_admob1)
+                  || placementId.matches(pattern_admob2)
+                  || placementId.matches(pattern_admob3);
           break;
         case "ad_dfp_native":
           result = placementId.matches(pattern_dfp1) || placementId.matches(pattern_dfp2);
@@ -374,7 +377,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     if ("android".equals(sections[0])) {
       String version = sections[2];
       String[] digits = version.split("\\.");
-      return Integer.parseInt(digits[0]) >= 8 && Integer.parseInt(digits[1]) >= 1;
+      int mainVersion = Integer.parseInt(digits[0]);
+      int minorVersion = Integer.parseInt(digits[1]);
+      return mainVersion + minorVersion / 10.0 >= 8.1;
     }
 
     return false;
