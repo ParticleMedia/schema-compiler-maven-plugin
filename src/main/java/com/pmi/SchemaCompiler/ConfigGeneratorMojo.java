@@ -277,6 +277,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         case "ad_prebid_native":
           result = placementId.matches(pattern_admob1);
           break;
+        case "ad_nb_native":
+          result = true;
+          break;
         default:
           throw new Exception(MessageFormat.format("Unknown ctype: {0}", ctype));
       }
