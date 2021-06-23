@@ -96,6 +96,10 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   @Parameter(property = "adsDir", required = true)
   private String adsDir;
 
+  // The directory which contains all the output JSON.
+  @Parameter(property = "dataDir", required = true)
+  private String dataDir;
+
   private ObjectMapper objectMapper =
       new ObjectMapper().configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
@@ -118,8 +122,14 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     Path adsByOsDir = Paths.get(this.adsDir, os);
     Files.list(adsByOsDir)
-        .filter(path -> !"default".equals(path.getFileName().toString()) && Files.isDirectory(path))
+        .filter(
+            path ->
+                !"default".equals(path.getFileName().toString())
+                    && !"vip".equals(path.getFileName().toString())
+                    && Files.isDirectory(path))
         .forEach(segmentPath -> processSegment(segmentPath, adDefault));
+
+    processVIP(os);
     return null;
   }
 
@@ -139,6 +149,41 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           .forEach(entry -> writeJson(segment, entry.getKey(), entry.getValue()));
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  private void processVIP(String os) throws IOException {
+    Map<String, Map<String, Object>> vipSettings = readVIPSettings(os);
+    Files.walk(Paths.get(this.dataDir), 1)
+        .filter(path -> isJsonFile(path))
+        .filter(path -> path.getFileName().toString().startsWith(os))
+        .forEach(path -> genVIP(path, vipSettings));
+  }
+
+  private Map<String, Map<String, Object>> readVIPSettings(String os) throws IOException {
+    return Files.walk(Paths.get(this.adsDir, os, "vip"))
+        .filter(path -> isJsonFile(path))
+        .map(
+            path -> {
+              return new Pair<String, Map<String, Object>>(
+                  path.getFileName().toString(), readJson(path));
+            })
+        .collect(
+            Collectors.toMap(
+                pair -> pair.getValue0().replace(".json", ""), pair -> pair.getValue1()));
+  }
+
+  private void genVIP(Path filePath, Map<String, Map<String, Object>> vipSettings) {
+    String adSlot = getAdSlot(filePath);
+    String fileName = filePath.getFileName().toString();
+    Map<String, Object> json = readJson(filePath);
+    Map<String, Object> vipSetting = vipSettings.get(adSlot);
+    if (vipSetting != null) {
+      for (String key : vipSetting.keySet()) {
+        json.put(key, vipSetting.get(key));
+      }
+
+      writeJson("vip", fileName, json);
     }
   }
 
@@ -324,10 +369,20 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   }
 
   private void writeJson(Path segmentPath, String fileName, Map<String, Object> ad) {
+    String segment = getSegment(segmentPath);
+    writeJson(segment, fileName, ad);
+  }
+
+  private void writeJson(String segment, String fileName, Map<String, Object> ad) {
     try {
-      String segment = getSegment(segmentPath);
       String segmentDir = createDir(segment);
-      Path filePath = Paths.get(segmentDir, fileName + ".json");
+      Path filePath = null;
+      if (fileName.endsWith(".json")) {
+        filePath = Paths.get(segmentDir, fileName);
+      } else {
+        filePath = Paths.get(segmentDir, fileName + ".json");
+      }
+
       Files.write(
           filePath,
           this.objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(ad).getBytes());
