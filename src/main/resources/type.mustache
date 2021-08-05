@@ -37,7 +37,7 @@ public class {{name}} {
   @JsonSerialize(using = IntegerEnumSerializer.class)
   {{/meta.serializeEnumAsInt}}
   {{#meta.serializeIgnore}}
-  @JsonIgnore
+  @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   {{/meta.serializeIgnore}}
   private {{{type}}} {{name}};
 
