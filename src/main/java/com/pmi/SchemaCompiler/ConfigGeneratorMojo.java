@@ -311,6 +311,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
                   || placementId.matches(pattern_admob3);
           break;
         case "ad_dfp_native":
+        case "ad_dfp_video":
           result = placementId.matches(pattern_dfp1) || placementId.matches(pattern_dfp2);
           break;
         case "ad_fb_native":

@@ -7,7 +7,7 @@
 
   <groupId>com.pmi</groupId>
   <artifactId>schema-compiler-maven-plugin</artifactId>
-  <version>4.2</version>
+  <version>4.3</version>
   <packaging>maven-plugin</packaging>
 
   <name>schema-compiler-maven-plugin Maven Plugin</name>
@@ -186,19 +186,19 @@
       <uniqueVersion>false</uniqueVersion>
       <id>particle.plugin.release.local</id>
       <name>Particle Repository Plugin release</name>
-      <!-- <url>${env.ARTIFACTORY_ADDR}/plugins-release-local</url> -->
+      <url>${env.ARTIFACTORY_ADDR}/plugins-release-local</url>
       <!-- <url>https://artifactory.n.i18n.newsbreak.com/artifactory/libs-release</url> -->
       <!-- <url>https://artifactory.n.euro.newsbreak.com/artifactory/libs-release</url> -->
-      <url>https://artifactory.n.asia.newsbreak.com/artifactory/libs-release</url>
+      <!-- <url>https://artifactory.n.asia.newsbreak.com/artifactory/libs-release</url> -->
     </repository>
     <snapshotRepository>
       <uniqueVersion>true</uniqueVersion>
       <id>particle.plugin.snapshot.local</id>
       <name>Particle Repository Plugin snapshot</name>
-      <!-- <url>${env.ARTIFACTORY_ADDR}/plugins-snapshot-local</url> -->
+      <url>${env.ARTIFACTORY_ADDR}/plugins-snapshot-local</url>
       <!-- <url>https://artifactory.n.i18n.newsbreak.com/artifactory/libs-snapshot</url> -->
       <!-- <url>https://artifactory.n.euro.newsbreak.com/artifactory/libs-snapshot</url> -->
-      <url>https://artifactory.n.asia.newsbreak.com/artifactory/libs-snapshot</url>
+      <!-- <url>https://artifactory.n.asia.newsbreak.com/artifactory/libs-snapshot</url> -->
     </snapshotRepository>
   </distributionManagement>
 
