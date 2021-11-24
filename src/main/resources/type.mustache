@@ -63,7 +63,14 @@ public class {{name}} {
     }
     {{/isList}}
     {{^isList}}
+    {{#useClone}}
+    if (this.{{name}} != null) {
+      newObj.{{setterName}}(this.{{clonerName}}());
+    }
+    {{/useClone}}
+    {{^useClone}}
     newObj.{{setterName}}(this.{{clonerName}}());
+    {{/useClone}}
     {{/isList}}
     {{/fields}}
 

@@ -146,6 +146,7 @@ public class SchemaValidatorMojo extends AbstractMojo {
       for (Iterator<JsonNode> itr = ads.elements(); itr.hasNext(); ) {
         ObjectNode ad = (ObjectNode) itr.next();
         ad.remove("_comment");
+        ad.remove("_galaxy_placement_id");
       }
     }
 
