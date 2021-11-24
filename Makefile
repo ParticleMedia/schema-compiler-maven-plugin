@@ -4,7 +4,7 @@ build:
 test:
 	@mvn clean test
 
-deploy:
+release:
 	@mvn clean deploy
 
 include .makefiles/*.mk

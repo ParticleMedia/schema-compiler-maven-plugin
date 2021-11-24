@@ -324,6 +324,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           result = placementId.matches(pattern_admob1);
           break;
         case "ad_nb_native":
+        case "ad_nova_native":
           result = true;
           break;
         default:
