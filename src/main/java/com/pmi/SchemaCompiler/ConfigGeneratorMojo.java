@@ -71,8 +71,8 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           }
         }
 
-        double price1 = new Double(o1.get("price").toString());
-        double price2 = new Double(o2.get("price").toString());
+        double price1 = Double.valueOf(o1.get("price").toString());
+        double price2 = Double.valueOf(o2.get("price").toString());
         if ("ad_fb_native".equals(o1.get("ctype")) && price1 == 0) {
           return -1;
         }
@@ -88,11 +88,11 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   @Parameter(defaultValue = "${project}")
   private MavenProject project;
 
-  // The directory which contains all adunits.
+  // The directory which contains all ad units separated by os.
   @Parameter(property = "adUnitsDir", required = true)
   private String adUnitsDir;
 
-  // The directory which contains all ads.
+  // The directory which contains all ads separated by OS.
   @Parameter(property = "adsDir", required = true)
   private String adsDir;
 
@@ -108,8 +108,11 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   public void execute() throws MojoExecutionException {
     try {
       this.adUnits = readAdUnits();
-      genAds("ios");
-      genAds("android");
+      Path adsDirPath = Paths.get(this.adsDir);
+      List<Path> allOS = Files.list(adsDirPath).collect(Collectors.toList());
+      for (Path osPath : allOS) {
+        genAds(osPath.getFileName().toString());
+      }
     } catch (Exception e) {
       getLog().error(e);
       throw new MojoExecutionException(e.getMessage(), e);
@@ -122,14 +125,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
     Path adsByOsDir = Paths.get(this.adsDir, os);
     Files.list(adsByOsDir)
-        .filter(
-            path ->
-                !"default".equals(path.getFileName().toString())
-                    && !"vip".equals(path.getFileName().toString())
-                    && Files.isDirectory(path))
+        .filter(path -> !"default".equals(path.getFileName().toString()) && Files.isDirectory(path))
         .forEach(segmentPath -> processSegment(segmentPath, adDefault));
 
-    processVIP(os);
     return null;
   }
 
@@ -149,41 +147,6 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           .forEach(entry -> writeJson(segment, entry.getKey(), entry.getValue()));
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  private void processVIP(String os) throws IOException {
-    Map<String, Map<String, Object>> vipSettings = readVIPSettings(os);
-    Files.walk(Paths.get(this.dataDir), 1)
-        .filter(path -> isJsonFile(path))
-        .filter(path -> path.getFileName().toString().startsWith(os))
-        .forEach(path -> genVIP(path, vipSettings));
-  }
-
-  private Map<String, Map<String, Object>> readVIPSettings(String os) throws IOException {
-    return Files.walk(Paths.get(this.adsDir, os, "vip"))
-        .filter(path -> isJsonFile(path))
-        .map(
-            path -> {
-              return new Pair<String, Map<String, Object>>(
-                  path.getFileName().toString(), readJson(path));
-            })
-        .collect(
-            Collectors.toMap(
-                pair -> pair.getValue0().replace(".json", ""), pair -> pair.getValue1()));
-  }
-
-  private void genVIP(Path filePath, Map<String, Map<String, Object>> vipSettings) {
-    String adSlot = getAdSlot(filePath);
-    String fileName = filePath.getFileName().toString();
-    Map<String, Object> json = readJson(filePath);
-    Map<String, Object> vipSetting = vipSettings.get(adSlot);
-    if (vipSetting != null) {
-      for (String key : vipSetting.keySet()) {
-        json.put(key, vipSetting.get(key));
-      }
-
-      writeJson("vip", fileName, json);
     }
   }
 
