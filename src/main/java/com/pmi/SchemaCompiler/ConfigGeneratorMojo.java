@@ -30,14 +30,14 @@ import org.javatuples.Pair;
 @Mojo(name = "generate-config", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class ConfigGeneratorMojo extends AbstractMojo {
   private static String pattern_fb = "153277661752118_\\d{15,16}";
-  private static String pattern_admob1 = "/21839579524/am-(ios|android)-.+";
+  private static String pattern_admob1 = "/21839579524/am-(ios|android|androidLite)-.+";
   private static String pattern_admob2 = "ca-app-pub-4001304092171320/\\d{10}";
   // gam 360
-  private static String pattern_admob3 = "/22129205380/gam360-(ios|android)-.+";
-  private static String pattern_dfp1 = "/21839579524/am-(ios|android)-.+";
-  private static String pattern_dfp2 = "/22129205380/gam360-(ios|android)-.+";
+  private static String pattern_admob3 = "/22129205380/gam360-(ios|android|androidLite)-.+";
+  private static String pattern_dfp1 = "/21839579524/am-(ios|android|androidLite)-.+";
+  private static String pattern_dfp2 = "/22129205380/gam360-(ios|android|androidLite)-.+";
   private static String pattern_smaato = "\\d{9}";
-  private static String pattern_aps = "/21839579524/aps/amazon-(ios|android)-.+";
+  private static String pattern_aps = "/21839579524/aps/amazon-(ios|android|androidLite)-.+";
 
   private class AdUnitComparator implements Comparator<Map<String, Object>> {
     private boolean isGreaterThanAndroidVersion810 = false;
