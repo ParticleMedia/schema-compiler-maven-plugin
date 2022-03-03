@@ -29,7 +29,7 @@ import org.javatuples.Pair;
 /** Goal which generates ad config files. */
 @Mojo(name = "generate-config", defaultPhase = LifecyclePhase.PROCESS_RESOURCES)
 public class ConfigGeneratorMojo extends AbstractMojo {
-  private static String pattern_fb = "153277661752118_\\d{15,16}";
+  private static String pattern_fb = "(153277661752118|4921738341205298)_\\d{15,16}";
   private static String pattern_admob1 = "/21839579524/am-(ios|android|androidLite)-.+";
   private static String pattern_admob2 = "ca-app-pub-4001304092171320/\\d{10}";
   // gam 360
