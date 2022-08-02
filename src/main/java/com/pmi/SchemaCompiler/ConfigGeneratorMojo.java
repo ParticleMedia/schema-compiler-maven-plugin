@@ -42,12 +42,33 @@ public class ConfigGeneratorMojo extends AbstractMojo {
 
   private class AdUnitComparator implements Comparator<Map<String, Object>> {
     private boolean isGreaterThanAndroidVersion810 = false;
+    private String slot = null;
+    private String os = null;
 
-    AdUnitComparator(boolean isGreaterThanAndroidVersion810) {
+    AdUnitComparator(boolean isGreaterThanAndroidVersion810, String os, String slot) {
       this.isGreaterThanAndroidVersion810 = isGreaterThanAndroidVersion810;
+      this.os = os;
+      this.slot = slot;
     }
 
     public int compare(Map<String, Object> o1, Map<String, Object> o2) {
+      if("android".equals(os) && "article".equals(slot)) {
+        if ("ad_aps_native".equals(o1.get("ctype"))) {
+          if (isGreaterThanAndroidVersion810) {
+            return -1;
+          } else {
+            return 1;
+          }
+        }
+        if ("ad_aps_native".equals(o2.get("ctype"))) {
+          if (isGreaterThanAndroidVersion810) {
+            return 1;
+          } else {
+            return -1;
+          }
+        }
+      }
+
       if (!o1.containsKey("price") && !o2.containsKey("price")) {
         return 0;
       } else if (!o1.containsKey("price")) {
@@ -184,6 +205,8 @@ public class ConfigGeneratorMojo extends AbstractMojo {
       Path path, Map<String, Map<String, Object>> adDefault) {
     Map<String, Object> ad = readAndExpand(path);
     String adSlot = getAdSlot(path);
+    String os = getAdOs(path);
+
     ad = override(adDefault.get(adSlot), ad);
 
     ArrayList<Map<String, Object>> ads = (ArrayList<Map<String, Object>>) ad.get("ads");
@@ -204,7 +227,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
       ads.remove((int) smaato.get(i).getValue0());
     }
 
-    AdUnitComparator comparator = new AdUnitComparator(isGreaterThanAndroidVersion810(path));
+    AdUnitComparator comparator = new AdUnitComparator(isGreaterThanAndroidVersion810(path), os, adSlot);
     ads.sort(comparator);
 
     for (Pair<Integer, Map<String, Object>> pair : smaato) {
@@ -319,6 +342,12 @@ public class ConfigGeneratorMojo extends AbstractMojo {
     String fileName = path.getFileName().toString();
     String[] sections = fileName.split("_");
     return sections[1];
+  }
+
+  private String getAdOs(Path path) {
+    String fileName = path.getFileName().toString();
+    String[] sections = fileName.split("_");
+    return sections[0];
   }
 
   private String getSegment(Path segmentPath) {
