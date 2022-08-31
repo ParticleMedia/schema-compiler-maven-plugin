@@ -39,6 +39,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   private static String pattern_smaato = "\\d{9}";
   private static String pattern_aps = "/21839579524/aps/amazon-(ios|ipad|android|androidLite)-.+";
   private static String pattern_apploving = "[a-zA-Z0-9]+";
+  private static String pattern_unity = "[-a-zA-Z0-9]+";
 
   private class AdUnitComparator implements Comparator<Map<String, Object>> {
     private boolean isGreaterThanAndroidVersion810 = false;
@@ -295,6 +296,9 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           break;
         case "ad_applovin_native":
           result = placementId.matches(pattern_apploving);
+          break;
+        case "ad_unity_native":
+          result = placementId.matches(pattern_unity);
           break;
         default:
           throw new Exception(MessageFormat.format("Unknown ctype: {0}", ctype));
