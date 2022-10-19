@@ -11,6 +11,7 @@ public class Meta {
   private Boolean serializeEnumAsInt;
   private Boolean serializeIgnore;
   private String customValidator;
+  private String defaultValue;
 
   public String toString() {
     return MessageFormat.format(

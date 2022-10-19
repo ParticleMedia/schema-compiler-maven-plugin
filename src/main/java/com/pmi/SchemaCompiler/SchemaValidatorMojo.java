@@ -127,8 +127,9 @@ public class SchemaValidatorMojo extends AbstractMojo {
               .enable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
               .enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
               .readValue(filePath.toUri().toURL(), targetC);
-      JsonNode acutal = objectMapper.readTree(objectMapper.writeValueAsString(targetObject));
-      JsonNode expected = trim(objectMapper.readTree(filePath.toUri().toURL()));
+      JsonNode acutal =
+          trim_actual(objectMapper.readTree(objectMapper.writeValueAsString(targetObject)));
+      JsonNode expected = trim_expected(objectMapper.readTree(filePath.toUri().toURL()));
       if (!acutal.equals(comparator, expected)) {
         throw new Exception(
             MessageFormat.format(
@@ -140,13 +141,28 @@ public class SchemaValidatorMojo extends AbstractMojo {
     }
   }
 
-  private JsonNode trim(JsonNode node) {
+  private JsonNode trim_expected(JsonNode node) {
     JsonNode ads = node.get("ads");
     if (ads != null) {
       for (Iterator<JsonNode> itr = ads.elements(); itr.hasNext(); ) {
         ObjectNode ad = (ObjectNode) itr.next();
         ad.remove("_comment");
         ad.remove("_galaxy_placement_id");
+        // This filed has default value.
+        ad.remove("expiration");
+      }
+    }
+
+    return node;
+  }
+
+  private JsonNode trim_actual(JsonNode node) {
+    JsonNode ads = node.get("ads");
+    if (ads != null) {
+      for (Iterator<JsonNode> itr = ads.elements(); itr.hasNext(); ) {
+        ObjectNode ad = (ObjectNode) itr.next();
+        // This filed has default value.
+        ad.remove("expiration");
       }
     }
 

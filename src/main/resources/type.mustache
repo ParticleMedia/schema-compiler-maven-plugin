@@ -39,7 +39,13 @@ public class {{name}} {
   {{#meta.serializeIgnore}}
   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
   {{/meta.serializeIgnore}}
+  {{#meta.defaultValue}}
+  private {{{type}}} {{name}} = {{meta.defaultValue}};
+  {{/meta.defaultValue}}
+  {{^meta.defaultValue}}
   private {{{type}}} {{name}};
+  {{/meta.defaultValue}}
+  
 
   {{/fields}}
   public {{name}} clone() {
