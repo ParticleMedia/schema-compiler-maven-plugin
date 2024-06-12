@@ -279,7 +279,10 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           break;
         case "ad_dfp_native":
         case "ad_dfp_video":
-          result = placementId.matches(pattern_dfp1) || placementId.matches(pattern_dfp2) || placementId.matches(pattern_admob2);
+          result =
+              placementId.matches(pattern_dfp1)
+                  || placementId.matches(pattern_dfp2)
+                  || placementId.matches(pattern_admob2);
           break;
         case "ad_fb_native":
           result = placementId.matches(pattern_fb);
@@ -290,6 +293,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
         case "ad_prebid_native":
         case "ad_nb_native":
         case "ad_nova_native":
+        case "ad_msp_native":
           result = true;
           break;
         case "ad_applovin_native":
