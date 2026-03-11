@@ -34,6 +34,7 @@ public class ConfigGeneratorMojo extends AbstractMojo {
   private static String pattern_admob2 = "ca-app-pub-4001304092171320/\\d{10}";
   // gam 360
   private static String pattern_admob3 = "/22129205380/gam360-(ios|ipad|android|androidLite)-.+";
+  private static String pattern_admob4 = "/21775744923/example/adaptive-banner";
   private static String pattern_dfp1 = "/21839579524/am-(ios|ipad|android|androidLite)-.+";
   private static String pattern_dfp2 = "/22129205380/gam360-(ios|ipad|android|androidLite)-.+";
   private static String pattern_smaato = "\\d{9}";
@@ -275,7 +276,8 @@ public class ConfigGeneratorMojo extends AbstractMojo {
           result =
               placementId.matches(pattern_admob1)
                   || placementId.matches(pattern_admob2)
-                  || placementId.matches(pattern_admob3);
+                  || placementId.matches(pattern_admob3)
+                  || placementId.matches(pattern_admob4);
           break;
         case "ad_dfp_native":
         case "ad_dfp_video":

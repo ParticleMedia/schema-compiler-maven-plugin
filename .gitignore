@@ -4,3 +4,7 @@ target/
 .factorypath
 .project
 .vscode/
+.idea/
+
+### Claude ###
+CLAUDE.md
